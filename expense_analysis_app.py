@@ -38,6 +38,10 @@ if uploaded_file is not None:
     df['CleanText'] = df['Text'].apply(clean_text)
     df['CleanDescription'] = df['Material Description'].apply(clean_text)
 
+     # Replace "multiple" in Material column with NaN or empty string
+    df['Material'] = df['Material'].astype(str).str.strip()  # Normalize strings
+    df['Material'] = df['Material'].replace(r'(?i)^multiple$', np.nan, regex=True)
+    
     # Date and Amount Processing
     df['Document Date'] = pd.to_datetime(df['Document Date'])
     df['Amount in local currency'] = pd.to_numeric(df['Amount in local currency'], errors='coerce')
@@ -57,10 +61,10 @@ if uploaded_file is not None:
     conditions_to_remove = (
         (df['Text'].isna() | (df['Text'].str.strip() == "")) &
         (df['Material Description'].isna() | (df['Material Description'].str.strip() == "")) &
-        (df['Material'].isna() | (df['Material'].str.lower() == "multiple"))
+        (df['Material'].isna())
     )
     df = df[~conditions_to_remove]
-
+    
     # TF-IDF Vectorization
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(df['CleanText'])
