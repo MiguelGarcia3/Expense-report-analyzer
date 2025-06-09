@@ -45,7 +45,7 @@ if uploaded_file is not None:
     df = df[df['Amount in local currency'] > 0]
 
     # Keywords Input
-    keywords_input = st.text_input("Enter keywords to filter out (comma-separated):",
+    keywords_input = st.text_input("Enter keywords to filter out (comma-separated) add or remove words from the pre-set list:",
                                    "shipping, expedite, fee, service, freight, repair, overnight, next day, after hours, delivery")
     keywords = [kw.strip().lower() for kw in keywords_input.split(',')]
     pattern = '|'.join([r'\b' + re.escape(keyword) + r'\b' for keyword in keywords])
@@ -84,7 +84,7 @@ if uploaded_file is not None:
     # Inventory Parameters
     months_range = st.slider("Select number of months for inventory range:", 1, 12, 3)
     critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 100.0)
-    critical_order_threshold = st.slider("Order count threshold for critical parts:", 1, 50, 5)
+    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=5, step=1)
 
     # Flag single orders
     df['order_count'] = df.groupby('Material')['Material'].transform('count')
