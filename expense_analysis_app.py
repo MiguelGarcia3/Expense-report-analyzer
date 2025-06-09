@@ -154,10 +154,10 @@ if uploaded_file is not None:
     )
 
     # Output Final CSV
-    inventory_stats.to_csv("expenses_stats.csv", index=False)
+    inventory_stats.to_excel("expenses_stats.xlsx", index=False, engine='openpyxl')
 
     st.success("Analysis complete!")
     st.dataframe(inventory_stats.head())
 
-    with open("expenses_stats.csv", "rb") as f:
-        st.download_button("Download Results", data=f, file_name="expenses_stats.csv", mime="text/csv")
+    with open("expenses_stats.xlsx", "rb") as f:
+        st.download_button("Download Results", data=f, file_name="expenses_stats.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
