@@ -19,9 +19,13 @@ st.title("🔧 Expense Analyzer Tool")
 st.write("Upload your CSV file below and set parameters to analyze expenses.")
 
 # File Upload
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+uploaded_file = st.file_uploader("Upload your file (.csv or .xlsx)", type=["csv", "xlsx"]))
 if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file, encoding="ISO-8859-1")
+    # Check file type and read accordingly
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file, encoding="ISO-8859-1")
+    elif uploaded_file.name.endswith('.xlsx'):
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
 
     # Clean Text
     custom_stopwords = set(stopwords.words('english')).union({
