@@ -19,7 +19,7 @@ st.title("🔧 Expense Analyzer Tool")
 st.write("Upload your CSV file below and set parameters to analyze expenses.")
 
 # File Upload
-uploaded_file = st.file_uploader("Upload your file (.csv or .xlsx)", type=["csv", "xlsx"]))
+uploaded_file = st.file_uploader("Upload your file (.csv or .xlsx)", type=["csv", "xlsx"])
 if uploaded_file is not None:
     # Check file type and read accordingly
     if uploaded_file.name.endswith('.csv'):
