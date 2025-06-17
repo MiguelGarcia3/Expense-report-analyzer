@@ -78,12 +78,9 @@ if uploaded_file is not None:
         else:
             return f"NEW-M{str(row['Cluster']).zfill(5)}"
 
-    # Always assign synthetic ID — don't skip any rows
-    df['Material'] = df.apply(generate_unique_id, axis=1)
-
     # Apply synthetic IDs early
     df['Material'] = df.apply(
-        lambda row: row['Material'] if pd.notnull(row['Material']) and row['Material'] != ''
+        lambda row: row['Material'] if pd.notnull(row['Material']) or row['Material'] != ''
         else generate_unique_id(row),
         axis=1
     )
