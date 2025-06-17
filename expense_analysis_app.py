@@ -84,11 +84,14 @@ if uploaded_file is not None:
         lambda row: row['Material'] if pd.notnull(row['Material']) and row['Material'] != ''
         else generate_unique_id(row), axis=1
     )
+  
+    # Remove rows where original Material was "Multiple"
+    df = df[df['Material'] != 'Multiple']
 
     # Inventory Parameters
-    months_range = st.slider("Select number of months for inventory range:", 1, 12, 3)
-    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 100.0)
-    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=5, step=1)
+    months_range = st.slider("Select number of months for inventory range:", 1, 12, 6)
+    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 500.0)
+    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=2, step=1)
 
     # Flag single orders
     df['order_count'] = df.groupby('Material')['Material'].transform('count')
@@ -121,14 +124,16 @@ if uploaded_file is not None:
         })
 
     inventory_stats = pd.DataFrame(results)
-
+    
+    inventory_stats['Min Inventory'] = inventory_stats['Min Inventory'].replace(0, 1)
+    
     # Merge back single order flags
     single_order_flag = single_order_df[['Material', 'Single_order_flag']]
     inventory_stats = inventory_stats.merge(single_order_flag, how='outer')
     inventory_stats['Single_order_flag'] = inventory_stats['Single_order_flag'].notna()
     inventory_stats.loc[inventory_stats['Single_order_flag'], 'Min Inventory'] = 1
     inventory_stats.loc[inventory_stats['Single_order_flag'], 'Max Inventory'] = 1
-
+    
     df = pd.concat([df, single_order_df], ignore_index=True)
     df["Year"] = df["Document Date"].dt.year
 
@@ -160,7 +165,7 @@ if uploaded_file is not None:
     inventory_stats["Cost Center Name"] = inventory_stats["Material"].map(
         df.groupby("Material")["Cost center name"].first()
     )
-
+    
     # Output Final CSV
     inventory_stats.to_excel("expenses_stats.xlsx", index=False, engine='openpyxl')
 
