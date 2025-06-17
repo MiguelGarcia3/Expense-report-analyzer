@@ -65,7 +65,7 @@ if uploaded_file is not None:
     conditions_to_remove = (
         (df['Text'].isna() | (df['Text'].str.strip() == "")) &
         (df['Material Description'].isna() | (df['Material Description'].str.strip() == "")) &
-        (df['Material'].isna())
+        (df['Material'].isna() | (df['Material'].str.strip() == ""))
     )
     df = df[~conditions_to_remove]
     
