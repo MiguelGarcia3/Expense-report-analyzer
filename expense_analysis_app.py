@@ -147,7 +147,24 @@ if uploaded_file is not None:
 
     inventory_stats["Critical Part"] = inventory_stats["Material"].isin(critical_parts)
     inventory_stats["Critical Part"] = inventory_stats["Critical Part"].map({True: "Critical", False: "Noncritical"})
+   
+    # Add description, cost & cost center
+    material_text_mapping = df.groupby('Material')['CleanText'].first()
+    inventory_stats["Text"] = inventory_stats["Material"].map(material_text_mapping)
+    inventory_stats.fillna({"Text": "N/A"}, inplace=True)
 
+    inventory_stats["Amount in local currency"] = inventory_stats["Material"].map(
+        df.groupby("Material")["Amount in local currency"].mean()
+    )
+
+    material_description_mapping = df.groupby('Material')['CleanDescription'].first()
+    inventory_stats["Material Description"] = inventory_stats["Material"].map(material_description_mapping)
+    inventory_stats.fillna({"Material Description": "N/A"}, inplace=True)
+
+    inventory_stats["Cost Center Name"] = inventory_stats["Material"].map(
+        df.groupby("Material")["Cost center name"].first()
+    )
+    
     # Output Final Excel
     inventory_stats.to_excel("expenses_stats.xlsx", index=False, engine='openpyxl')
 
