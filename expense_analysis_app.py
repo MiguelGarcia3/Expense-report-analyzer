@@ -158,6 +158,6 @@ inventory_stats.to_excel("expenses_stats.xlsx", index=False, engine='openpyxl')
 st.success("Analysis complete!")
 st.dataframe(inventory_stats.head())
 
-# Download button
- with open("expenses_stats.xlsx", "rb") as f:
-    st.download_button("Download Results", data=f, file_name="expenses_stats.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    # Download button
+     with open("expenses_stats.xlsx", "rb") as f:
+        st.download_button("Download Results", data=f, file_name="expenses_stats.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
