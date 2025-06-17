@@ -42,9 +42,9 @@ if uploaded_file is not None:
     df['CleanText'] = df['Text'].apply(clean_text)
     df['CleanDescription'] = df['Material Description'].apply(clean_text)
 
-     # Replace "multiple" in Material column with NaN or empty string
-    df['Material'] = df['Material'].astype(str).str.strip()  # Normalize strings
-    df['Material'] = df['Material'].replace(r'(?i)^multiple$', np.nan, regex=True)
+    # Clean and remove rows where Material == 'Multiple' (case-insensitive)
+    df['Material'] = df['Material'].astype(str).str.strip()
+    df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
     
     # Date and Amount Processing
     df['Document Date'] = pd.to_datetime(df['Document Date'])
