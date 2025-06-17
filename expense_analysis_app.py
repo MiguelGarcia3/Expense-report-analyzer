@@ -64,6 +64,7 @@ if uploaded_file is not None:
     # Remove empty rows
     conditions_to_remove = (
         (df['Text'].isna() | (df['Text'].str.strip() == "")) &
+        (df['Material Description'].isna() | (df['Material Description'].str.strip() == "")) &
         (df['Material'].isna() | (df['Material'].str.strip() == ""))
     )
     df = df[~conditions_to_remove]
@@ -89,9 +90,9 @@ if uploaded_file is not None:
     )
 
     # Inventory Parameters
-    months_range = st.slider("Select number of months for inventory range:", 1, 12, 3)
-    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 100.0)
-    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=5, step=1)
+    months_range = st.slider("Select number of months for inventory range:", 1, 12, 6)
+    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 500.0)
+    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=2, step=1)
 
     # Flag single orders
     df['order_count'] = df.groupby('Material')['Material'].transform('count')
