@@ -22,7 +22,11 @@ if uploaded_file is not None:
         df = pd.read_csv(uploaded_file, encoding="ISO-8859-1")
     else:
         df = pd.read_excel(uploaded_file, engine='openpyxl')
-
+        
+    # Remove unwanted material values
+    df['Material'] = df['Material'].astype(str).str.strip()
+    df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
+   
     # Clean Text
     custom_stopwords = set(stopwords.words('english')).union({
         'pcs', 'piece', 'spare', 'component', 'material', 'set'
@@ -37,12 +41,7 @@ if uploaded_file is not None:
 
     df['CleanText'] = df['Text'].apply(clean_text)
     df['CleanDescription'] = df['Material Description'].apply(clean_text)
-
-    # Remove unwanted material values
-    df['Material'] = df['Material'].astype(str).str.strip()
-    df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
-    df = df[df['Material'].notna() & (df['Material'] != '')]
-
+    
     # Date and Amount Processing
     df['Document Date'] = pd.to_datetime(df['Document Date'])
     df['Amount in local currency'] = pd.to_numeric(df['Amount in local currency'], errors='coerce')
@@ -52,7 +51,7 @@ if uploaded_file is not None:
     # Keywords Filtering
     keywords_input = st.text_input(
         "Enter keywords to filter out (comma-separated):",
-        "shipping, expedite, fee, service, freight, repair, overnight, next day, after hours, delivery"
+        "shipping, expedite, fee, service, freight, repair, overnight, next day, after hours, delivery, clean"
     )
     keywords = [kw.strip().lower() for kw in keywords_input.split(',')]
     pattern = '|'.join([r'\b' + re.escape(kw) + r'\b' for kw in keywords])
