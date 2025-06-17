@@ -19,7 +19,7 @@ st.title("🔧 Expense Analyzer Tool")
 st.write("Upload your CSV file below and set parameters to analyze expenses.")
 
 # File Upload
-uploaded_file = st.file_uploader("Upload your file (.csv or .xlsx)", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("Upload your file (.csv or .xlsx)", type=["csv", "xlsx"]))
 if uploaded_file is not None:
     # Check file type and read accordingly
     if uploaded_file.name.endswith('.csv'):
@@ -41,10 +41,6 @@ if uploaded_file is not None:
 
     df['CleanText'] = df['Text'].apply(clean_text)
     df['CleanDescription'] = df['Material Description'].apply(clean_text)
-
-    # Clean and remove rows where Material == 'Multiple' (case-insensitive)
-    df['Material'] = df['Material'].astype(str).str.strip()
-    df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
     
     # Date and Amount Processing
     df['Document Date'] = pd.to_datetime(df['Document Date'])
@@ -65,7 +61,7 @@ if uploaded_file is not None:
     conditions_to_remove = (
         (df['Text'].isna() | (df['Text'].str.strip() == "")) &
         (df['Material Description'].isna() | (df['Material Description'].str.strip() == "")) &
-        (df['Material'].isna() | (df['Material'].str.strip() == ""))
+        (df['Material'].isna())
     )
     df = df[~conditions_to_remove]
     
@@ -90,9 +86,9 @@ if uploaded_file is not None:
     )
 
     # Inventory Parameters
-    months_range = st.slider("Select number of months for inventory range:", 1, 12, 6)
-    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 500.0)
-    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=2, step=1)
+    months_range = st.slider("Select number of months for inventory range:", 1, 12, 3)
+    critical_price_threshold = st.number_input("Price threshold for critical parts ($):", 0.0, 100000.0, 100.0)
+    critical_order_threshold = st.number_input("Enter order count threshold for critical parts:", min_value=1, value=5, step=1)
 
     # Flag single orders
     df['order_count'] = df.groupby('Material')['Material'].transform('count')
@@ -136,8 +132,7 @@ if uploaded_file is not None:
     df = pd.concat([df, single_order_df], ignore_index=True)
     df["Year"] = df["Document Date"].dt.year
 
-
-    # Mark Critical Parts (if high cost OR high demand)
+   # Mark Critical Parts (if high cost OR high demand)
     high_cost = df[df["Amount in local currency"] >= critical_price_threshold]["Material"].unique()
     order_counts = df.groupby("Material").size().reset_index(name="Total Orders")
     high_demand = order_counts[order_counts["Total Orders"] >= critical_order_threshold]["Material"].unique()
@@ -145,9 +140,10 @@ if uploaded_file is not None:
     # Use set union for OR logic
     critical_parts = set(high_cost).union(set(high_demand))
 
+    # Apply to final table
     inventory_stats["Critical Part"] = inventory_stats["Material"].isin(critical_parts)
     inventory_stats["Critical Part"] = inventory_stats["Critical Part"].map({True: "Critical", False: "Noncritical"})
-   
+
     # Add description, cost & cost center
     material_text_mapping = df.groupby('Material')['CleanText'].first()
     inventory_stats["Text"] = inventory_stats["Material"].map(material_text_mapping)
@@ -164,14 +160,12 @@ if uploaded_file is not None:
     inventory_stats["Cost Center Name"] = inventory_stats["Material"].map(
         df.groupby("Material")["Cost center name"].first()
     )
-    
-    # Output Final Excel
+
+    # Output Final CSV
     inventory_stats.to_excel("expenses_stats.xlsx", index=False, engine='openpyxl')
 
-    # Show success
     st.success("Analysis complete!")
     st.dataframe(inventory_stats.head())
 
-    # Download button
     with open("expenses_stats.xlsx", "rb") as f:
         st.download_button("Download Results", data=f, file_name="expenses_stats.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
