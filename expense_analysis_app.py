@@ -24,8 +24,8 @@ if uploaded_file is not None:
         df = pd.read_excel(uploaded_file, engine='openpyxl')
         
     # Remove unwanted material values
-    df['Material'] = df['Material'].astype(str).str.strip()
-    df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
+    #df['Material'] = df['Material'].astype(str).str.strip()
+    #df = df[~df['Material'].str.contains('(?i)^multiple$', na=True)]
    
     # Clean Text
     custom_stopwords = set(stopwords.words('english')).union({
@@ -53,6 +53,7 @@ if uploaded_file is not None:
         "Enter keywords to filter out (comma-separated):",
         "shipping, expedite, fee, service, freight, repair, overnight, next day, after hours, delivery, clean"
     )
+    
     keywords = [kw.strip().lower() for kw in keywords_input.split(',')]
     pattern = '|'.join([r'\b' + re.escape(kw) + r'\b' for kw in keywords])
     df['CleanText'] = df['CleanText'].str.lower()
@@ -67,12 +68,18 @@ if uploaded_file is not None:
     clustering = DBSCAN(eps=0.47, min_samples=2, metric='cosine')
     df['Cluster'] = clustering.fit_predict(X)
 
+    # Reset index to ensure consistent row indexing
+    df.reset_index(drop=True, inplace=True)
+
     # Generate new material numbers
     def generate_unique_id(row):
         if row['Cluster'] == -1:
             return f"NEW-M#-{str(row.name).zfill(5)}"
         else:
             return f"NEW-M{str(row['Cluster']).zfill(5)}"
+
+    # Always assign synthetic ID — don't skip any rows
+    df['Material'] = df.apply(generate_unique_id, axis=1)
 
     # Apply synthetic IDs early
     df['Material'] = df.apply(
